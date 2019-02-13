@@ -1,0 +1,356 @@
+The HTML Markup consists of an ASP.Net GridView placed inside AJAX UpdatePanel with multiple event handlers assigned which will be discussed later.
+The GridView has a CommandField column which will display the command buttons i.e. Edit, Update, Cancel and Delete.
+Below the GridView there’s a Form which will allow us to insert data to the SQL Server database table.
+<asp:ScriptManager ID="ScriptManager1" runat="server">
+</asp:ScriptManager>
+<div id="dvGrid" style="padding: 10px; width: 450px">
+<asp:UpdatePanel ID="UpdatePanel1" runat="server">
+    <ContentTemplate>
+        <asp:GridView ID="GridView1" runat="server" AutoGenerateColumns="false" OnRowDataBound="OnRowDataBound"
+            DataKeyNames="CustomerId" OnRowEditing="OnRowEditing" OnRowCancelingEdit="OnRowCancelingEdit" PageSize = "3" AllowPaging ="true" OnPageIndexChanging = "OnPaging"
+            OnRowUpdating="OnRowUpdating" OnRowDeleting="OnRowDeleting" EmptyDataText="No records has been added."
+            Width="450">
+            <Columns>
+                <asp:TemplateField HeaderText="Name" ItemStyle-Width="150">
+                    <ItemTemplate>
+                        <asp:Label ID="lblName" runat="server" Text='<%# Eval("Name") %>'></asp:Label>
+                    </ItemTemplate>
+                    <EditItemTemplate>
+                        <asp:TextBox ID="txtName" runat="server" Text='<%# Eval("Name") %>' Width="140"></asp:TextBox>
+                    </EditItemTemplate>
+                </asp:TemplateField>
+                <asp:TemplateField HeaderText="Country" ItemStyle-Width="150">
+                    <ItemTemplate>
+                        <asp:Label ID="lblCountry" runat="server" Text='<%# Eval("Country") %>'></asp:Label>
+                    </ItemTemplate>
+                    <EditItemTemplate>
+                        <asp:TextBox ID="txtCountry" runat="server" Text='<%# Eval("Country") %>' Width="140"></asp:TextBox>
+                    </EditItemTemplate>
+                </asp:TemplateField>
+                <asp:CommandField ButtonType="Link" ShowEditButton="true" ShowDeleteButton="true"
+                    ItemStyle-Width="150" />
+            </Columns>
+        </asp:GridView>
+        <table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse">
+            <tr>
+                <td style="width: 150px">
+                    Name:<br />
+                    <asp:TextBox ID="txtName" runat="server" Width="140" />
+                </td>
+                <td style="width: 150px">
+                    Country:<br />
+                    <asp:TextBox ID="txtCountry" runat="server" Width="140" />
+                </td>
+                <td style="width: 150px">
+                    <asp:Button ID="btnAdd" runat="server" Text="Add" OnClick="Insert" />
+                </td>
+            </tr>
+        </table>
+    </ContentTemplate>
+</asp:UpdatePanel>
+</div>
+ 
+ 
+Namespaces
+You will need to import the following namespaces.
+C#
+using System.Data;
+using System.Configuration;
+using System.Data.SqlClient;
+ 
+VB.Net
+Imports System.Data
+Imports System.Configuration
+Imports System.Data.SqlClient
+ 
+ 
+Binding the GridView with records from SQL Database Table
+The GridView is populated from the database inside the Page Load event of the page.
+C#
+protected void Page_Load(object sender, EventArgs e)
+{
+    if (!this.IsPostBack)
+    {
+        this.BindGrid();
+    }
+}
+ 
+private void BindGrid()
+{
+    string constr = ConfigurationManager.ConnectionStrings["constr"].ConnectionString;
+    string query = "SELECT * FROM Customers";
+    using (SqlConnection con = new SqlConnection(constr))
+    {
+        using (SqlDataAdapter sda = new SqlDataAdapter(query, con))
+        {
+            using (DataTable dt = new DataTable())
+            {
+                sda.Fill(dt);
+                GridView1.DataSource = dt;
+                GridView1.DataBind();
+            }
+        }
+    }
+}
+ 
+VB.Net
+Protected Sub Page_Load(ByVal sender As Object, ByVal e As EventArgs) Handles Me.Load
+    If Not Me.IsPostBack Then
+        Me.BindGrid()
+    End If
+End Sub
+ 
+Private Sub BindGrid()
+    Dim constr As String = ConfigurationManager.ConnectionStrings("constr").ConnectionString
+    Dim query As String = "SELECT * FROM Customers"
+    Using con As SqlConnection = New SqlConnection(constr)
+        Using sda As SqlDataAdapter = New SqlDataAdapter(query, con)
+            Using dt As DataTable = New DataTable()
+                sda.Fill(dt)
+                GridView1.DataSource = dt
+                GridView1.DataBind()
+            End Using
+        End Using
+    End Using
+End Sub
+ 
+ 
+Inserting records to GridView
+The following event handler is executed when the Add Button is clicked. The name and the country values are fetched from their respective TextBoxes and then passed to the SQL Query for inserting the record in the database.
+Finally the GridView is again populated with data by making call to the BindGrid method.
+C#
+protected void Insert(object sender, EventArgs e)
+{
+    string name = txtName.Text;
+    string country = txtCountry.Text;
+    txtName.Text = "";
+    txtCountry.Text = "";
+    string query = "INSERT INTO Customers VALUES(@Name, @Country)";
+    string constr = ConfigurationManager.ConnectionStrings["constr"].ConnectionString;
+    using (SqlConnection con = new SqlConnection(constr))
+    {
+        using (SqlCommand cmd = new SqlCommand(query))
+        {
+            cmd.Parameters.AddWithValue("@Name", name);
+            cmd.Parameters.AddWithValue("@Country", country);
+            cmd.Connection = con;
+            con.Open();
+            cmd.ExecuteNonQuery();
+            con.Close();
+        }
+    }
+    this.BindGrid();
+}
+ 
+VB.Net
+Protected Sub Insert(ByVal sender As Object, ByVal e As EventArgs)
+    Dim name As String = txtName.Text
+    Dim country As String = txtCountry.Text
+    Dim query As String = "INSERT INTO Customers VALUES(@Name, @Country)"
+    Dim constr As String = ConfigurationManager.ConnectionStrings("constr").ConnectionString
+    txtName.Text = ""
+    txtCountry.Text = ""
+    Using con As SqlConnection = New SqlConnection(constr)
+        Using cmd As SqlCommand = New SqlCommand(query)
+            cmd.Parameters.AddWithValue("@Name", name)
+            cmd.Parameters.AddWithValue("@Country", country)
+            cmd.Connection = con
+            con.Open()
+            cmd.ExecuteNonQuery()
+            con.Close()
+        End Using
+    End Using
+ 
+    Me.BindGrid()
+End Sub
+ 
+ 
+Editing and Updating GridView records
+Edit
+When the Edit Button is clicked, the GridView’s OnRowEditing event handler is triggered. Here simply the EditIndex of the GridView is updated with the Row Index of the GridView Row to be edited.
+C#
+protected void OnRowEditing(object sender, GridViewEditEventArgs e)
+{
+    GridView1.EditIndex = e.NewEditIndex;
+    this.BindGrid();
+}
+ 
+VB.Net
+Protected Sub OnRowEditing(sender As Object, e As GridViewEditEventArgs)
+    GridView1.EditIndex = e.NewEditIndex
+    Me.BindGrid()
+End Sub
+ 
+Update
+When the Update Button is clicked, the GridView’s OnRowUpdating event handler is triggered.
+CustomerId which is the primary key is fetched from the DataKey property of GridView while the Name and Country fields are fetched from their respective TextBoxes and are passed to the SQL Query for updating the records in the database.
+Note: For more details on DataKeys please refer my article DataKeyNames in GridView example in ASP.Net.
+ 
+Finally the GridView is again populated with data by making call to the BindGrid method.
+C#
+protected void OnRowUpdating(object sender, GridViewUpdateEventArgs e)
+{
+    GridViewRow row = GridView1.Rows[e.RowIndex];
+    int customerId = Convert.ToInt32(GridView1.DataKeys[e.RowIndex].Values[0]);
+    string name = (row.FindControl("txtName") as TextBox).Text;
+    string country = (row.FindControl("txtCountry") as TextBox).Text;
+    string query = "UPDATE Customers SET Name=@Name, Country=@Country WHERE CustomerId=@CustomerId";
+    string constr = ConfigurationManager.ConnectionStrings["constr"].ConnectionString;
+    using (SqlConnection con = new SqlConnection(constr))
+    {
+        using (SqlCommand cmd = new SqlCommand(query))
+        {
+            cmd.Parameters.AddWithValue("@CustomerId", customerId);
+            cmd.Parameters.AddWithValue("@Name", name);
+            cmd.Parameters.AddWithValue("@Country", country);
+            cmd.Connection = con;
+            con.Open();
+            cmd.ExecuteNonQuery();
+            con.Close();
+        }
+    }
+    GridView1.EditIndex = -1;
+    this.BindGrid();
+}
+ 
+VB.Net
+Protected Sub OnRowUpdating(ByVal sender As Object, ByVal e As GridViewUpdateEventArgs)
+    Dim row As GridViewRow = GridView1.Rows(e.RowIndex)
+    Dim customerId As Integer = Convert.ToInt32(GridView1.DataKeys(e.RowIndex).Values(0))
+    Dim name As String = (TryCast(row.FindControl("txtName"), TextBox)).Text
+    Dim country As String = (TryCast(row.FindControl("txtCountry"), TextBox)).Text
+    Dim query As String = "UPDATE Customers SET Name=@Name, Country=@Country WHERE CustomerId=@CustomerId"
+   Dim constr As String = ConfigurationManager.ConnectionStrings("constr").ConnectionString
+    Using con As SqlConnection = New SqlConnection(constr)
+        Using cmd As SqlCommand = New SqlCommand(query)
+            cmd.Parameters.AddWithValue("@CustomerId", customerId)
+            cmd.Parameters.AddWithValue("@Name", name)
+            cmd.Parameters.AddWithValue("@Country", country)
+            cmd.Connection = con
+            con.Open()
+            cmd.ExecuteNonQuery()
+            con.Close()
+        End Using
+    End Using
+ 
+    GridView1.EditIndex = -1
+    Me.BindGrid()
+End Sub
+ 
+Cancel Edit
+When the Cancel Button is clicked, the GridView’s OnRowCancelingEdit event handler is triggered. Here the EditIndex is set to -1 and the GridView is populated with data.
+C#
+protected void OnRowCancelingEdit(object sender, EventArgs e)
+{
+    GridView1.EditIndex = -1;
+    this.BindGrid();
+}
+ 
+VB.Net
+Protected Sub OnRowCancelingEdit(sender As Object, e As EventArgs)
+    GridView1.EditIndex = -1
+    Me.BindGrid()
+End Sub
+ 
+ 
+Deleting GridView records
+When the Delete Button is clicked, the GridView’s OnRowDeleting event handler is triggered.
+CustomerId which is the primary key is fetched from the DataKey property of GridView and is passed to the SQL Query for deletion of the record from the database.
+Finally the GridView is again populated with data by making call to the BindGrid method.
+C#
+protected void OnRowDeleting(object sender, GridViewDeleteEventArgs e)
+{
+    int customerId = Convert.ToInt32(GridView1.DataKeys[e.RowIndex].Values[0]);
+    string query = "DELETE FROM Customers WHERE CustomerId=@CustomerId";
+    string constr = ConfigurationManager.ConnectionStrings["constr"].ConnectionString;
+    using (SqlConnection con = new SqlConnection(constr))
+    {
+        using (SqlCommand cmd = new SqlCommand(query))
+        {
+            cmd.Parameters.AddWithValue("@CustomerId", customerId);
+            cmd.Connection = con;
+            con.Open();
+            cmd.ExecuteNonQuery();
+            con.Close();
+        }
+    }
+ 
+    this.BindGrid();
+}
+ 
+VB.Net
+Protected Sub OnRowDeleting(ByVal sender As Object, ByVal e As GridViewDeleteEventArgs)
+    Dim customerId As Integer = Convert.ToInt32(GridView1.DataKeys(e.RowIndex).Values(0))
+    Dim query As String = "DELETE FROM Customers WHERE CustomerId=@CustomerId"
+    Dim constr As String = ConfigurationManager.ConnectionStrings("constr").ConnectionString
+    Using con As SqlConnection = New SqlConnection(constr)
+        Using cmd As SqlCommand = New SqlCommand(query)
+            cmd.Parameters.AddWithValue("@CustomerId", customerId)
+            cmd.Connection = con
+            con.Open()
+            cmd.ExecuteNonQuery()
+            con.Close()
+        End Using
+    End Using
+ 
+    Me.BindGrid()
+End Sub
+ 
+In order to display a confirmation message when deleting row, I have made use of OnRowDataBound event handler where I have first determined the Delete Button and then I have attach the JavaScript Confirm to its client side Click event handler.
+C#
+protected void OnRowDataBound(object sender, GridViewRowEventArgs e)
+{
+    if (e.Row.RowType == DataControlRowType.DataRow && e.Row.RowIndex != GridView1.EditIndex)
+    {
+        (e.Row.Cells[2].Controls[2] as LinkButton).Attributes["onclick"] = "return confirm('Do you want to delete this row?');";
+    }
+}
+ 
+VB.Net
+Protected Sub OnRowDataBound(sender As Object, e As GridViewRowEventArgs)
+    If e.Row.RowType = DataControlRowType.DataRow AndAlso e.Row.RowIndex <> GridView1.EditIndex Then
+        TryCast(e.Row.Cells(2).Controls(2), LinkButton).Attributes("onclick") = "return confirm('Do you want to delete this row?');"
+    End If
+End Sub
+ 
+ 
+Paging
+The OnPageIndexChanging event handler is triggered when a Page Number is clicked. Here, the PageIndex property of the GridView is updated.
+Finally the GridView is again populated with data by making call to the BindGrid method.
+C#
+protected void OnPaging(object sender, GridViewPageEventArgs e)
+{
+    GridView1.PageIndex = e.NewPageIndex;
+    this.BindGrid();
+}
+ 
+VB.Net
+Protected Sub OnPaging(ByVal sender As Object, ByVal e As GridViewPageEventArgs)
+    GridView1.PageIndex = e.NewPageIndex
+    Me.BindGrid()
+End Sub
+ 
+ 
+Displaying AJAX Loader during Add, Edit, Update, Delete and Paging operations
+The jQuery BlockUI Plugin has been applied to the dvGrid HTML DIV. When the ASP.Net AJAX UpdatePanel makes a request, the HTML DIV is blocked and an animation is displayed.
+When the request is completed, the HTML DIV is unblocked and the animation is hidden.
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script type="text/javascript" src="scripts/jquery.blockUI.js"></script>
+<script type="text/javascript">
+    $(function () {
+        BlockUI("dvGrid");
+        $.blockUI.defaults.css = {};
+    });
+    function BlockUI(elementID) {
+        var prm = Sys.WebForms.PageRequestManager.getInstance();
+        prm.add_beginRequest(function () {
+            $("#" + elementID).block({ message: '<div align = "center">' + '<img src="images/loadingAnim.gif"/></div>',
+                css: {},
+                overlayCSS: { backgroundColor: '#000000', opacity: 0.6, border: '3px solid #63B2EB' }
+            });
+        });
+        prm.add_endRequest(function () {
+            $("#" + elementID).unblock();
+        });
+    };
+</script>
