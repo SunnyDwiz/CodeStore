@@ -1,0 +1,67 @@
+-----------SQL ASSIGNMENT 1
+===============================================
+
+create table OfficeHours (Id int identity(1,1),
+Name varchar(50),
+EmpId int,LogIn Time,LogOut Time)
+
+Select * from OfficeHours
+
+Insert Into OfficeHours(EmpId,Name,LogIn,LogOut) values(1001,'Summar','9:00:00','10:50:20')
+Insert Into OfficeHours(EmpId,Name,LogIn,LogOut) values(1001,'Summar','11:30:00','17:00:20')
+Insert Into OfficeHours(EmpId,Name,LogIn,LogOut) values(1001,'Summar','18:00:00','21:00:20')
+Insert Into OfficeHours(EmpId,Name,LogIn,LogOut) values(1001,'Summar','21:45:00','22:00:20')
+Insert Into OfficeHours(EmpId,Name,LogIn,LogOut) values(1002,'Sunny','10:30:00','10:30:00')
+Insert Into OfficeHours(EmpId,Name,LogIn,LogOut) values(1002,'Sunny','11:30:00','11:30:00')
+Insert Into OfficeHours(EmpId,Name,LogIn,LogOut) values(1002,'Sunny','17:30:00','19:30:00')
+Insert Into OfficeHours(EmpId,Name,LogIn,LogOut) values(1002,'Sunny','22:30:00','23:30:00')
+
+select * from OfficeHours
+----Query To Get The In Time---
+
+
+
+SELECT Name,EmpId ,Sum(DATEDIFF(MINUTE, LogIn , LogOut)) AS MinuteDiff,
+concat(Sum(DATEDIFF(MINUTE, LogIn , LogOut))/ 60, ':', Sum(DATEDIFF(MINUTE, LogIn , LogOut))% 60 ) as TimeMin
+FROM OfficeHours group by Name,EmpId
+
+
+
+===========================================================================
+-----SQL ASSIGNMENT 3
+================================================================================
+Create Table Employee (Id int Identity(1,1),Name varchar(50),DeptName varchar(50),EmpId int,ManagerId int)
+Create Table Manager(Id int Identity(1,1),Name varchar(50),ManagerId int)
+
+Insert Into Employee(Name,DeptName,EmpId,ManagerId) Values('Summar','Testing',1001,1009)
+Insert Into Employee(Name,DeptName,EmpId,ManagerId) Values('Suraj','Hr',1002,1011)
+Insert Into Employee(Name,DeptName,EmpId,ManagerId) Values('Sunny','Testing',1003,1011)
+Insert Into Employee(Name,DeptName,EmpId,ManagerId) Values('Uttam','Designer',1004,1012)
+Insert Into Employee(Name,DeptName,EmpId,ManagerId) Values('Sachin','Developer',1005,1012)
+Insert Into Employee(Name,DeptName,EmpId,ManagerId) Values('Nik','Hr',1006,1009)
+Insert Into Employee(Name,DeptName,EmpId,ManagerId) Values('Bev','Developer',1007,1010)
+Insert Into Employee(Name,DeptName,EmpId,ManagerId) Values('Rohit','Hr',1009,1010)
+Insert Into Employee(Name,DeptName,EmpId,ManagerId) Values('Anil','.Net',1010,1012)
+Insert Into Employee(Name,DeptName,EmpId,ManagerId) Values('Pradeep','JAVA',1011,1011)
+Insert Into Employee(Name,DeptName,EmpId,ManagerId) Values('Kumar','Support',1012,1010)
+
+Select M.Name AS Employee, E.Name AS Manager from Employee E Inner Join Employee M on E.EmpId = M.ManagerId 
+========================================================================================== 
+----SQL ASSIGNMENT 2
+============================================================================================
+Create Table Student(Id int Identity(1,1), SoNO int,Name Varchar(50),Branch varchar(5))
+Insert into Student(SoNO,Name,Branch) values(101,'Sunil','Phy')
+Insert into Student(SoNO,Name,Branch) values(102,'Channapa','Chem')
+Insert into Student(SoNO,Name,Branch) values(103,'Praful','Math')
+Insert into Student(SoNO,Name,Branch) values(104,'Deepmala','Sci')
+Insert into Student(SoNO,Name,Branch) values(105,'Sayali','Bio')
+Insert into Student(SoNO,Name,Branch) values(106,'Haritha','BTech')
+Set Identity_insert Student On 
+Insert into Student(Id,SoNO,Name,Branch) values(100,107,'Summar','Entc')
+Set Identity_insert Student Off
+Insert into Student(SoNO,Name,Branch) values(108,'Priyanka','Chem')
+Insert into Student(SoNO,Name,Branch) values(109,'Sravani','BscIT')
+Insert into Student(SoNO,Name,Branch) values(110,'Avanthi','CSE')
+Insert into Student(SoNO,Name,Branch) values(111,'Sarma','CSE')
+
+Select * from Student
