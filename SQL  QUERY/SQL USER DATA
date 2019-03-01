@@ -1,0 +1,64 @@
+create table State(StateId int Identity(1,1) primary key, StateName varchar(30))
+
+
+
+create table City(CityId int identity(1,1) primary key, CityName varchar(25), FKStateID int foreign key references State(StateId))
+
+select * from 
+--State  
+ city
+
+insert into state(StateName) values ('Bihar'),('J&K'),('Himachal'),('Jharkhand'),('UttarPardes'),('MadhayPrades'),('Maharastra'),('Telanagna'),('Karnatka')
+insert into City(CityName, FKStateID) values ('Bhagalpur',1),('Anantnag',2),('Baramula',2),('Dharamsala',3),('Mandi',3),('Bokaro',4),('West.Singhbhum',4),('Devghar',4),('Merath',5),('Noida',5),('Bhopal',6),('Katni',6),('Nashik',7),('Solapur',7),('Amravati',7),('Warangal',8),('Suryapet',8),('Manglore',9),('Mysore',9)
+
+create table tblRole(RoleId int identity primary key, RoleName varchar(25))
+
+select * from tblrole
+
+insert into tblrole(rolename) values('Admin'),('User')
+
+create table UserData(
+UserId		int identity(1,1) primary Key,
+FirstName	varchar(25) not null,
+LastName	varchar(25),
+UserName	varchar(25) unique,
+Password	varchar(15) not null,
+Email		varchar(25) not null,
+Mobile		varchar(12) not null,
+Gender		varchar(10) not null, 
+Address		varchar(40) not null,
+CityID		int foreign key references City(CityId) not null,
+StateID		int foreign key references State(StateId)  not null,
+PinCode		varchar(6) not null,
+CreatedDate date default getdate(),
+ModifiedDate date,
+CreatedBy	int not null,
+ModifiedBy  int,
+RoleID		int foreign key references TblRole(RoleId)
+)
+
+drop table userdata
+
+insert into userdata(
+FirstName,	
+LastName	,
+UserName	,
+Password	,
+Email		,
+Mobile		,
+Gender		,
+Address		,
+CityID		,
+StateID		,
+PinCode		,
+CreatedBy	,
+RoleID		
+)values ('Sunny Kumar','Singh','Sunny','sunny@123','Sunny.singh@yash.com','8965245874','Male','Ratu Road',6,4,'834001',1,1)
+
+
+select * from State Select * from City where fkstateid=4
+
+
+select * from UserData
+
+    
